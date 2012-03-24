@@ -1,0 +1,36 @@
+bundle agent nagios_plugin_agent(nagios_plugin_path, nagios_plugin_name, nagios_plugin_args)
+{
+
+classes:
+
+"nagios_alert" or => {
+"nagios_plugin_$(nagios_plugin_name)_warning",
+"nagios_plugin_$(nagios_plugin_name)_critical",
+"nagios_plugin_$(nagios_plugin_name)_unknown",
+"nagios_plugin_$(nagios_plugin_name)_protocol_error"
+};
+
+files:
+
+"$(sys.workdir)/modules/nagios_plugin_wrapper"
+ perms     => mog("755","root","root"),
+ action => if_elapsed("60"),
+ copy_from => mycopy("$(g.local_cf_modules)/nagios_plugin_wrapper",
+  @(g.distribution_servers)),
+  classes => if_ok("nagios_plugin_wrapper_installed");
+
+commands:
+
+nagios_plugin_wrapper_installed::
+
+"$(sys.workdir)/modules/nagios_plugin_wrapper $(nagios_plugin_path) $(nagios_plugin_name) $(nagios_plugin_args)"
+
+module => "true",
+no_output => "true";
+
+reports:
+
+nagios_alert::
+
+	"Nagios plugin $(nagios_plugin_name) on $(sys.host) reports $(nagios_plugin_wrapper.output) on $(sys.date)";
+}

@@ -1,0 +1,43 @@
+# Some environment
+body copy_from mycopy(from,server)
+{
+	source      => "$(from)";
+	servers => { "@(server)" };
+	compare     => "digest";
+	trustkey => "true";
+	encrypt => "true";
+}
+
+# Start the actual bundle
+
+bundle agent example
+{
+
+vars: 
+
+"distribution_servers" slist => { "distserver.example.com" };
+"local_cf_modules" string => "/srv/cf/var/cfengine/modules";
+"nagios_plugin_path" string => "/usr/lib64/nagios/plugins";
+
+methods:
+
+# Nagios checks
+
+any::
+
+ "nagios_plugin_agent"
+  usebundle => nagios_plugin_agent("$(nagios_plugin_path)",
+  "check_rpc",
+  "-H localhost -C portmapper");
+
+ "nagios_plugin_agent"
+  usebundle => nagios_plugin_agent("$(nagios_plugin_path)",
+  "check_rpc",
+  "-H localhost -C ypbind");
+
+ "nagios_plugin_agent"
+  usebundle => nagios_plugin_agent("$(nagios_plugin_path)",
+  "check_rpc",
+  "-H localhost -C ypserv");
+
+}

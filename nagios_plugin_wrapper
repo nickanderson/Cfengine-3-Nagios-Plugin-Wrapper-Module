@@ -1,0 +1,25 @@
+#!/bin/sh
+PREFIX=${1}
+PLUGIN=${2}
+shift 2
+OUTPUT=`$PREFIX/$PLUGIN $@`
+EXIT=$?
+/bin/echo "=output=$OUTPUT"
+
+case "$EXIT" in
+   '0')
+	echo "+nagios_plugin_${PLUGIN}_ok"
+	;;
+   '1')
+	echo "+nagios_plugin_${PLUGIN}_warning"
+	;;
+   '2')
+	echo "+nagios_plugin_${PLUGIN}_critical"
+	;;
+   '3')
+	echo "+nagios_plugin_${PLUGIN}_unknown"
+	;;
+   *)
+	echo "+nagios_plugin_${PLUGIN}_protocol_error"
+	;;
+esac
